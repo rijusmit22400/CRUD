@@ -106,21 +106,23 @@ def update_user():
 		if _name and _id and _amount and request.method == 'POST':
 			#do not save password as a plain text
 			# save edits
-			sql = "UPDATE account SET name=%s, amount=%s WHERE id=%s"
-			data = (_name, _amount, _id,)
-			conn = mysql.connect()
-			cursor = conn.cursor()
-			cursor.execute(sql, data)
-			conn.commit()
+			url = 'http://localhost:8080/update'
+
+			params = {
+				'id':_id,
+				'name':_name,
+				'amount': _amount
+			}
+			resp = requests.post(url=url,json=params)
+			row = resp.json() 
 			flash('account updated successfully!')
 			return redirect('/')
 		else:
 			return 'Error while updating user'
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close() 
-		conn.close()
+
+
 		
 @app.route('/delete/<int:id>')
 def delete_user(id):

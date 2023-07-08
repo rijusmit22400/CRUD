@@ -85,11 +85,12 @@ def edit_view(id):
 
 @app.route('/update', methods=['POST'])
 def update_user():
-	try:		
-		_id = request.form['inputid']
+	try:	
+		json2 = request.get_json()	
+		_id = json2['id']
 		_id = int(_id)
-		_name = request.form['inputname']
-		_amount = request.form['inputamount']
+		_name = json2['name']
+		_amount = json2['amount']
 		_amount = float(_amount)
 		# validate the received values
 		if _name and _id and _amount and request.method == 'POST':
@@ -102,7 +103,7 @@ def update_user():
 			cursor.execute(sql, data)
 			conn.commit()
 			flash('account updated successfully!')
-			result = json.dumps(data.__dict__, indent=2, sort_keys=True)
+			result = json.dumps(data, indent=2, sort_keys=True)
 			return result 
 		else:
 			return 'Error while updating user'
