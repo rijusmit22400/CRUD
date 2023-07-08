@@ -1,3 +1,5 @@
+import json
+import pandas as pd
 import pymysql
 from app import app
 from tables import Results
@@ -5,9 +7,15 @@ from db_config import mysql
 from flask import flash, render_template, request, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 
-@app.route('/new_user')
-def add_user_view():
-	return render_template('add.html')
+
+class Account:
+	id =0
+	name=""
+	amount=0.0
+	def __init__(self,row):
+		self.id = row["id"]
+		self.name = row["name"]
+		self.amount = row["amount"]
 		
 @app.route('/add', methods=['POST'])
 def add_user():
@@ -27,7 +35,9 @@ def add_user():
 			cursor.execute(sql, data)
 			conn.commit()
 			flash('account updated successfully!')
-			return redirect('/')
+			#return redirect('/')
+			result = json.dumps(data.__dict__, indent=2, sort_keys=True)
+			return result 
 		else:
 			return 'Error while adding account'
 	except Exception as e:
@@ -43,9 +53,9 @@ def users():
 		cursor = conn.cursor(pymysql.cursors.DictCursor)
 		cursor.execute("SELECT * FROM account")
 		rows = cursor.fetchall()
-		table = Results(rows)
-		table.border = True
-		return render_template('users.html', table=table)
+		df = pd.DataFrame(rows)
+		result  =df.to_json(orient="records")
+		return result
 	except Exception as e:
 		print(e)
 	finally:
@@ -55,12 +65,15 @@ def users():
 @app.route('/edit/<int:id>')
 def edit_view(id):
 	try:
+		#return "ok"+str(id)
 		conn = mysql.connect()
 		cursor = conn.cursor(pymysql.cursors.DictCursor)
 		cursor.execute("SELECT * FROM account WHERE id=%s", id)
 		row = cursor.fetchone()
+		amnt =Account(row)
+		result = json.dumps(amnt.__dict__, indent=2, sort_keys=True)
 		if row:
-			return render_template('edit.html', row=row)
+			return result
 		else:
 			return 'Error loading #{id}'.format(id=id)
 	except Exception as e:
@@ -68,6 +81,7 @@ def edit_view(id):
 	finally:
 		cursor.close()
 		conn.close()
+		print("ok")
 
 @app.route('/update', methods=['POST'])
 def update_user():
@@ -88,7 +102,8 @@ def update_user():
 			cursor.execute(sql, data)
 			conn.commit()
 			flash('account updated successfully!')
-			return redirect('/')
+			result = json.dumps(data.__dict__, indent=2, sort_keys=True)
+			return result 
 		else:
 			return 'Error while updating user'
 	except Exception as e:
@@ -102,10 +117,13 @@ def delete_user(id):
 	try:
 		conn = mysql.connect()
 		cursor = conn.cursor()
+		cursor.execute(f"SELECT * FROM account WHERE id={id}")
+		addm=cursor.fetchone()
 		cursor.execute("DELETE FROM account WHERE id=%s", (id))
+		js=json.dumps(addm.__dict__)
 		conn.commit()
-		flash('account deleted successfully!')
-		return redirect('/')
+		return js
+
 	except Exception as e:
 		print(e)
 	finally:
@@ -113,4 +131,4 @@ def delete_user(id):
 		conn.close()
 		
 if __name__ == "__main__":
-    app.run()
+	app.run()
