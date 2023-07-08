@@ -6,4 +6,40 @@
 <p>
 </p>
 
-{{ table }}
+<table border="1">
+    <thead>
+<tr>
+    <th>
+        ID
+    </th>
+    <th>
+        Name
+    </th>
+    <th>
+        Amount
+    </th>
+    <th>
+        EDIT 
+    </th>
+    <th>
+        DELETE
+    </th>
+</tr>
+</thead>
+<tbody>
+
+    {% for account in table %}
+    <tr>
+      <td>{{ account['id'] }}</td>
+      <td>{{ account['name'] }}</td>
+      <td>{{ account['amount'] }}</td>
+      <td><a href="/edit/{{ account['id'] }}"> Edit </a></td>
+      <td><a href="/delete/{{ account['id'] }}"> Delete </a></td>
+    </tr>
+  {% endfor %}
+
+</tbody>
+
+</table>
+<hr>
+Created By Rijusmit 

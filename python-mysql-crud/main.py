@@ -4,6 +4,27 @@ from tables import Results
 from db_config import mysql
 from flask import flash, render_template, request, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
+from collections import namedtuple
+from json import JSONEncoder
+import requests
+
+
+class Account:
+	id =0
+	name=""
+	amount=0.0
+	def __init__(self,row):
+		self.id = row["id"]
+		self.name = row["name"]
+		self.amount = row["amount"]
+
+def toAccount(json):
+	acnt = json.loads(json, object_hook=customAccountDecoder)
+	return acnt
+
+def customAccountDecoder(account):
+    return namedtuple('X', account.keys())(*account.values())
+
 
 @app.route('/new_user')
 def add_user_view():
@@ -39,35 +60,39 @@ def add_user():
 @app.route('/')
 def users():
 	try:
-		conn = mysql.connect()
-		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT * FROM account")
-		rows = cursor.fetchall()
-		table = Results(rows)
-		table.border = True
-		return render_template('users.html', table=table)
+		url = 'http://localhost:8080/'
+
+		params = dict(
+			id='6'
+		)
+
+		resp = requests.get(url=url)
+		data = resp.json() 
+		#table = toAccount(data)
+		#table.border = True
+		return render_template('users.html', table=data)
 	except Exception as e:
 		print(e)
 	finally:
-		cursor.close() 
-		conn.close()
+		print('done')
 
 @app.route('/edit/<int:id>')
 def edit_view(id):
 	try:
-		conn = mysql.connect()
-		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT * FROM account WHERE id=%s", id)
-		row = cursor.fetchone()
+		url = 'http://localhost:8080/edit/' + str(id)
+
+		params = dict(
+			id=id
+		)
+		resp = requests.get(url=url)
+		row = resp.json() 
 		if row:
 			return render_template('edit.html', row=row)
 		else:
 			return 'Error loading #{id}'.format(id=id)
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close()
-		conn.close()
+
 
 @app.route('/update', methods=['POST'])
 def update_user():
@@ -113,4 +138,4 @@ def delete_user(id):
 		conn.close()
 		
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=3000)
