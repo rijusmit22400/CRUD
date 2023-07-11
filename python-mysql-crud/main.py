@@ -9,6 +9,10 @@ from json import JSONEncoder
 import requests
 import json
 
+
+apibasedurl = 'http://localhost:8080'
+#apibasedurl = 'http://localhost:8090'
+
 class Account:
 	id =0
 	name=""
@@ -41,7 +45,7 @@ def add_user():
 		# validate the received values
 			#do not save password as a plain text
 			# save edits
-		url = 'http://localhost:8080/add'
+		url = apibasedurl + '/add'
 
 		params = {
 				'id':_id,
@@ -58,7 +62,7 @@ def add_user():
 @app.route('/')
 def users():
 	try:
-		url = 'http://localhost:8080/'
+		url =  apibasedurl + '/'
 		resp = requests.get(url=url)
 		data = resp.json() 
 		#table = toAccount(data)
@@ -72,7 +76,7 @@ def users():
 @app.route('/edit/<int:id>')
 def edit_view(id):
 	try:
-		url = 'http://localhost:8080/edit/' + str(id)
+		url = apibasedurl + '/edit/' + str(id)
 
 		params = dict(
 			id=id
@@ -99,7 +103,7 @@ def update_user():
 		if _name and _id and _amount and request.method == 'POST':
 			#do not save password as a plain text
 			# save edits
-			url = 'http://localhost:8080/update'
+			url = apibasedurl + '/update'
 
 			params = {
 				'id':_id,
@@ -122,11 +126,11 @@ def delete_user(id):
 	try:
 		id_=id
 		parm = {'id' : id_}
-		url = 'http://localhost:8080/delete/' + str(id)
+		url = apibasedurl + '/delete/' + str(id)
 		resp=requests.post(url,json=parm)
 		flash('account deleted successfully!')
 		return redirect('/')
 	except Exception as e:
 		print(e)
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=3000)
+    app.run(host='0.0.0.0', port=5000)
