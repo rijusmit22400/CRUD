@@ -6,7 +6,14 @@ from tables import Results
 from db_config import mysql
 from flask import flash, render_template, request, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
+from pymongo import MongoClient
+from bson.json_util import dumps
 
+connection = "mongodb://localhost:27017"
+databasename ="crud"
+
+mongodb_client = MongoClient(connection)
+database = mongodb_client[databasename]
 
 class Account:
 	id =0
@@ -16,6 +23,19 @@ class Account:
 		self.id = row["id"]
 		self.name = row["name"]
 		self.amount = row["amount"]
+
+
+'''
+a = Account({'id':90,'name':'Riju','amount':990})
+b = Account({'id':91,'name':'Rajeev','amount':990})
+c = Account({'id':92,'name':'Mpntu','amount':990})
+
+
+database["account"].insert_one(a.__dict__)
+database["account"].insert_one(b.__dict__)
+database["account"].insert_one(c.__dict__)
+'''
+
 		
 @app.route('/add', methods=['POST'])
 def add_user():
@@ -26,39 +46,28 @@ def add_user():
 		_amount = float(response['amount'])
 		# validate the received values
 			# save edits
-		sql = "INSERT INTO account (id, name, amount) VALUES(%s, %s, %s)"
-		data = (_id,_name,_amount)
-		conn = mysql.connect()
-		cursor = conn.cursor()
-		cursor.execute(sql, data)
-		n_data = ('id','name','amount')
-		n_data = dict(zip(n_data,data))
-		conn.commit()
+		act = Account({'id':_id,'name':_name,'amount':_amount})
+		result = json.dumps(act.__dict__, indent=2, sort_keys=True)
+
+		database["account"].insert_one(act.__dict__)
+
 		flash('account updated successfully!')
 		#return redirect('/')
-		result = json.dumps(n_data, indent=2, sort_keys=True)
+		
 		return result 
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close() 
-		conn.close()
+
 		
 @app.route('/')
 def users():
 	try:
-		conn = mysql.connect()
-		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT * FROM account")
-		rows = cursor.fetchall()
-		df = pd.DataFrame(rows)
-		result  =df.to_json(orient="records")
-		return result
+		books = list(database["account"].find(limit=100))
+		result = dumps(books)
+		return result 
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close() 
-		conn.close()
+
 
 @app.route('/edit/<int:id>')
 def edit_view(id):
@@ -134,3 +143,4 @@ def delete_user(id):
 		
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=8090)
+	mongodb_client.close()
