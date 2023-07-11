@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from collections import namedtuple
 from json import JSONEncoder
 import requests
-
+import json
 
 class Account:
 	id =0
@@ -39,33 +39,26 @@ def add_user():
 		_amount = request.form['inputamount']
 		_amount = float(_amount)
 		# validate the received values
-		if _name and _id and _amount and request.method == 'POST':
+			#do not save password as a plain text
 			# save edits
-			sql = "INSERT INTO account (id, name, amount) VALUES(%s, %s, %s)"
-			data = (_id,_name,_amount)
-			conn = mysql.connect()
-			cursor = conn.cursor()
-			cursor.execute(sql, data)
-			conn.commit()
-			flash('account updated successfully!')
-			return redirect('/')
-		else:
-			return 'Error while adding account'
+		url = 'http://localhost:8080/add'
+
+		params = {
+				'id':_id,
+				'name':_name,
+				'amount': _amount
+			}
+		resp = requests.post(url=url,json=params)
+		row = resp.json() 
+		flash('account added successfully!')
+		return redirect('/')
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close() 
-		conn.close()
 		
 @app.route('/')
 def users():
 	try:
 		url = 'http://localhost:8080/'
-
-		params = dict(
-			id='6'
-		)
-
 		resp = requests.get(url=url)
 		data = resp.json() 
 		#table = toAccount(data)
@@ -127,17 +120,13 @@ def update_user():
 @app.route('/delete/<int:id>')
 def delete_user(id):
 	try:
-		conn = mysql.connect()
-		cursor = conn.cursor()
-		cursor.execute("DELETE FROM account WHERE id=%s", (id))
-		conn.commit()
+		id_=id
+		parm = {'id' : id_}
+		url = 'http://localhost:8080/delete/' + str(id)
+		resp=requests.post(url,json=parm)
 		flash('account deleted successfully!')
 		return redirect('/')
 	except Exception as e:
 		print(e)
-	finally:
-		cursor.close() 
-		conn.close()
-		
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=3000)
