@@ -73,73 +73,46 @@ def users():
 def edit_view(id):
 	try:
 		#return "ok"+str(id)
-		conn = mysql.connect()
-		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT * FROM account WHERE id=%s", id)
-		row = cursor.fetchone()
-		amnt =Account(row)
-		result = json.dumps(amnt.__dict__, indent=2, sort_keys=True)
-		if row:
-			return result
-		else:
-			return 'Error loading #{id}'.format(id=id)
+		books = list(database["account"].find({"id":id}))
+		result = dumps(books)
+		return result
 	except Exception as e:
 		print(e)
 	finally:
-		cursor.close()
-		conn.close()
 		print("ok")
 
 @app.route('/update', methods=['POST'])
 def update_user():
 	try:	
-		json2 = request.get_json()	
-		_id = json2['id']
+		resp = request.get_json()	
+		_id = resp['id']
 		_id = int(_id)
-		_name = json2['name']
-		_amount = json2['amount']
+		_name = resp['name']
+		_amount = resp['amount']
 		_amount = float(_amount)
 		# validate the received values
-		if _name and _id and _amount and request.method == 'POST':
-			#do not save password as a plain text
-			# save edits
-			sql = "UPDATE account SET name=%s, amount=%s WHERE id=%s"
-			data = (_name, _amount, _id,)
-			conn = mysql.connect()
-			cursor = conn.cursor()
-			cursor.execute(sql, data)
-			conn.commit()
-			flash('account updated successfully!')
-			result = json.dumps(data, indent=2, sort_keys=True)
-			return result 
-		else:
-			return 'Error while updating user'
+		g = (database['account'].update_many({"id":_id},{"$set":{"name":_name,"amount":_amount,"id":_id}}))
+		flash('Account updated successfully!')
+		result = resp
+		return result 
 	except Exception as e:
 		print(e)
 	finally:
-		cursor.close() 
-		conn.close()
-		
+		print("ok")
+  
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete_user(id):
 	try:
-		resp=request.get_data()
-		conn = mysql.connect()
-		cursor = conn.cursor()
-		cursor.execute(f"SELECT * FROM account WHERE id={id}")
-		addm=cursor.fetchone()
-		cursor.execute("DELETE FROM account WHERE id=%s", (id))
-		parm=('id','name','amount')
-		parm=dict(zip(parm,addm))
-		js=json.dumps(parm)
-		conn.commit()
+		result=request.get_json()
+		_id=id
+		data = database['account'].find({"id":_id})
+		data1 = database['account'].delete_many({"id":_id})
+		js=data
 		return js
-
 	except Exception as e:
 		print(e)
 	finally:
-		cursor.close() 
-		conn.close()
+		print("ok")
 		
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=8090)
