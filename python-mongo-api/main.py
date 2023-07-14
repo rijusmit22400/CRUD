@@ -38,7 +38,7 @@ database["account"].insert_one(c.__dict__)
 
 		
 @app.route('/add', methods=['POST'])
-def add_user():
+def add_account():
 	try:
 		response = request.get_json()
 		_id = int(response['id'])
@@ -60,7 +60,7 @@ def add_user():
 
 		
 @app.route('/')
-def users():
+def accounts():
 	try:
 		books = list(database["account"].find(limit=100))
 		result = dumps(books)
@@ -82,7 +82,7 @@ def edit_view(id):
 		print("ok")
 
 @app.route('/update', methods=['POST'])
-def update_user():
+def update_account():
 	try:	
 		resp = request.get_json()	
 		_id = resp['id']
@@ -101,7 +101,7 @@ def update_user():
 		print("ok")
   
 @app.route('/delete/<int:id>', methods=['POST'])
-def delete_user(id):
+def delete_account(id):
 	try:
 		result=request.get_json()
 		_id=id

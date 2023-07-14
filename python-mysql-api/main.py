@@ -18,7 +18,7 @@ class Account:
 		self.amount = row["amount"]
 		
 @app.route('/add', methods=['POST'])
-def add_user():
+def add_account():
 	try:
 		response = request.get_json()
 		_id = int(response['id'])
@@ -45,7 +45,7 @@ def add_user():
 		conn.close()
 		
 @app.route('/')
-def users():
+def accounts():
 	try:
 		conn = mysql.connect()
 		cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -82,7 +82,7 @@ def edit_view(id):
 		print("ok")
 
 @app.route('/update', methods=['POST'])
-def update_user():
+def update_account():
 	try:	
 		json2 = request.get_json()	
 		_id = json2['id']
@@ -104,7 +104,7 @@ def update_user():
 			result = json.dumps(data, indent=2, sort_keys=True)
 			return result 
 		else:
-			return 'Error while updating user'
+			return 'Error while updating account'
 	except Exception as e:
 		print(e)
 	finally:
@@ -112,7 +112,7 @@ def update_user():
 		conn.close()
 		
 @app.route('/delete/<int:id>', methods=['POST'])
-def delete_user(id):
+def delete_account(id):
 	try:
 		resp=request.get_data()
 		conn = mysql.connect()

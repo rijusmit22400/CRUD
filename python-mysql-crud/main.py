@@ -30,12 +30,12 @@ def customAccountDecoder(account):
     return namedtuple('X', account.keys())(*account.values())
 
 
-@app.route('/new_user')
-def add_user_view():
+@app.route('/new_account')
+def add_account_view():
 	return render_template('add.html')
 		
 @app.route('/add', methods=['POST'])
-def add_user():
+def add_account():
 	try:		
 		_id = request.form['inputid']
 		_id = int(_id)
@@ -60,14 +60,14 @@ def add_user():
 		print(e)
 		
 @app.route('/')
-def users():
+def accounts():
 	try:
 		url =  apibasedurl + '/'
 		resp = requests.get(url=url)
 		data = resp.json() 
 		#table = toAccount(data)
 		#table.border = True
-		return render_template('users.html', table=data)
+		return render_template('accounts.html', table=data)
 	except Exception as e:
 		print(e)
 	finally:
@@ -92,7 +92,7 @@ def edit_view(id):
 
 
 @app.route('/update', methods=['POST'])
-def update_user():
+def update_account():
 	try:		
 		_id = request.form['inputid']
 		_id = int(_id)
@@ -115,14 +115,14 @@ def update_user():
 			flash('account updated successfully!')
 			return redirect('/')
 		else:
-			return 'Error while updating user'
+			return 'Error while updating account'
 	except Exception as e:
 		print(e)
 
 
 		
 @app.route('/delete/<int:id>')
-def delete_user(id):
+def delete_account(id):
 	try:
 		id_=id
 		parm = {'id' : id_}

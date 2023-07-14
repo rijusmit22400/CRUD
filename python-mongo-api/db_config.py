@@ -4,7 +4,7 @@ from flaskext.mysql import MySQL
 mysql = MySQL()
  
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'riju'
+app.config['MYSQL_DATABASE_A'] = 'riju'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'mummyandpapa2020'
 app.config['MYSQL_DATABASE_DB'] = 'bank'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
